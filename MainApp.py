@@ -11,15 +11,29 @@ zoom = 10
 
 # Funkcja wyświetlająca obraz
 def DisplayImage(receivedArray):
+    window = Tk()
+    image = Image.open("test.png")
+    ratio = height / width
     img = Image.fromarray(receivedArray)
-    img.save('test.png')
+    #img.save('test.png')
+    resizedWidth = width * zoom
+    print(resizedWidth)
+    resizedHeight = int(resizedWidth * ratio)
+    image = img
+    image = image.resize((resizedWidth,resizedHeight))
+    img = ImageTk.PhotoImage(image)
+    panel = Label(window, image=img)
+    panel.pack()
+    window.mainloop()
+
+def DisplayImageGood():
     window = Tk()
     image = Image.open("test.png")
     ratio = height / width
     resizedWidth = width * zoom
     print(resizedWidth)
     resizedHeight = int(resizedWidth * ratio)
-    image = image.resize((resizedWidth,resizedHeight))
+    image = image.resize((resizedWidth, resizedHeight))
     img = ImageTk.PhotoImage(image)
     panel = Label(window, image=img)
     panel.pack()
@@ -56,7 +70,7 @@ while index < height:
 
 
 # Wyświetlenie grafiki przed modyfikacją
-DisplayImage(sender.senderArray)
+DisplayImageGood()
 # Wyświetlenie grafiki po modyfikacji
 DisplayImage(receiver.receiverArray)
 

@@ -16,12 +16,3 @@ class Receiver:
         self.frame = frame
         self.receiverArray[index] = frame
 
-
-    def DisplayImage(self, receivedArray):
-        img = Image.fromarray(receivedArray)
-        img.save('test.png')
-        window = Tk()
-        img = ImageTk.PhotoImage(Image.open("test.png"))
-        panel = Label(window, image=img)
-        panel.pack()
-        window.mainloop()
