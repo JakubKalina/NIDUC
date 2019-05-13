@@ -1,14 +1,24 @@
 from tkinter import *
+from numpy import half
+
 from Sender import Sender
 from Receiver import Receiver
 from PIL import ImageTk, Image
+
+width = 0
+height = 0
 
 # Funkcja wyświetlająca obraz
 def DisplayImage(receivedArray):
     img = Image.fromarray(receivedArray)
     img.save('test.png')
     window = Tk()
-    img = ImageTk.PhotoImage(Image.open("test.png"))
+    image = Image.open("test.png")
+    ratio = height / width
+    resizedWidth = 250
+    resizedHeight = int(resizedWidth * ratio)
+    image = image.resize((resizedWidth,resizedHeight))
+    img = ImageTk.PhotoImage(image)
     panel = Label(window, image=img)
     panel.pack()
     window.mainloop()
@@ -23,12 +33,17 @@ receiver = Receiver()
 # Załadowanie obrazu z pliku do tablicy
 sender.LoadImage()
 
+width = sender.imgWidth
+print('Width: ',width)
+height = sender.imgHeight
+print('Height: ',height)
 
 index = 0
-while index < 64:
+
+while index < height:
     frame = sender.SendFrame(index)
 
-    for i in range(0,64):
+    for i in range(0,height): # !!! W tym miejscu podmienić hieght na 0 aby byly kolory
         for j in range(0,3):
             frame[i][j] = 0
 
