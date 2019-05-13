@@ -7,6 +7,7 @@ from PIL import ImageTk, Image
 
 width = 0
 height = 0
+zoom = 10
 
 # Funkcja wyświetlająca obraz
 def DisplayImage(receivedArray):
@@ -15,7 +16,8 @@ def DisplayImage(receivedArray):
     window = Tk()
     image = Image.open("test.png")
     ratio = height / width
-    resizedWidth = 250
+    resizedWidth = width * zoom
+    print(resizedWidth)
     resizedHeight = int(resizedWidth * ratio)
     image = image.resize((resizedWidth,resizedHeight))
     img = ImageTk.PhotoImage(image)
@@ -43,7 +45,7 @@ index = 0
 while index < height:
     frame = sender.SendFrame(index)
 
-    for i in range(0,height): # !!! W tym miejscu podmienić hieght na 0 aby byly kolory
+    for i in range(0,width): # !!! W tym miejscu podmienić hieght na 0 aby byly kolory
         for j in range(0,3):
             frame[i][j] = 0
 
