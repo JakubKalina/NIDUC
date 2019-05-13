@@ -12,10 +12,8 @@ zoom = 10
 # Funkcja wyświetlająca obraz
 def DisplayImage(receivedArray):
     window = Tk()
-    image = Image.open("test.png")
     ratio = height / width
     img = Image.fromarray(receivedArray)
-    #img.save('test.png')
     resizedWidth = width * zoom
     print(resizedWidth)
     resizedHeight = int(resizedWidth * ratio)
@@ -58,14 +56,15 @@ index = 0
 
 while index < height:
     frame = sender.SendFrame(index)
-
+    SumBefore = sender.GenerateControlSum(index)
     for i in range(0,width): # !!! W tym miejscu podmienić hieght na 0 aby byly kolory
         for j in range(0,3):
             frame[i][j] = 0
-
-    receiver.receiveImage(frame, index)
-    #print(receiver.frame)
-    #print('\n')
+    IsCorrect = receiver.receiveImage(frame, index, SumBefore)
+    print(SumBefore)
+    print(receiver.sum)
+    if IsCorrect:
+        print("dobre")
     index = index + 1
 
 
