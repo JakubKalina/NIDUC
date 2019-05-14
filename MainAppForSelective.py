@@ -70,16 +70,14 @@ def Receiving():
 def Checker():
     global List,SumBefore,frame
     while True:
-        List2 = List
-        time.sleep(0.3)
-        if len(List2) > 0:
-            for i in range (0,len(List2)):
-                SumBefore = sender.GenerateControlSum(List2[i])
-                frame = sender.SendFrame(List2[i])
-                IsCorrect = receiver.receiveImage(frame, List2[i], SumBefore)
-                if IsCorrect == 100:
-                    List2.remove(List2[i])
-                    i -= 1
+        time.sleep(0.1)
+        if len(List) > 0:
+            SumBefore = sender.GenerateControlSum(List[0])
+            frame = sender.SendFrame(List[0])
+            IsCorrect = receiver.receiveImage(frame, List[0], SumBefore)
+            if IsCorrect == 100:
+                List.remove(List[0])
+                IsCorrect = -1
 
 
 # Obiekt nadajnika
