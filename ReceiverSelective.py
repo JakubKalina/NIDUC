@@ -6,7 +6,7 @@ class Receiver:
     sum = 0
 
     def __init__(self):
-        i = Image.open('Spike.png')
+        i = Image.open('test.png')
         self.receiverArray = np.array(i)
 
     frame = []
