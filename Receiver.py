@@ -1,7 +1,6 @@
 from tkinter import *
 from PIL import ImageTk, Image
 import numpy as np
-
 class Receiver:
 
     sum = 0
@@ -15,6 +14,11 @@ class Receiver:
     def receiveImage(self, frame, index, SumBefore):
         self.frame = frame
         self.receiverArray[index] = frame
+
+        # Go-Back-N protokół do przesyłania
+        # receiverProtocol = GoBackNReceiver(windowSize=2,timeout=2)
+        # self.receiverArray[index] = receiverProtocol.getFrame(frame)
+
         for i in range (0,10):
             for j in range (0,4):
                 self.sum += self.receiverArray[index][i][j] + i*4 + j*2
