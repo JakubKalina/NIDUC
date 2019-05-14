@@ -13,7 +13,7 @@ class Sender:
 
 
     def LoadImage(self):
-        i = Image.open('Spike.png')
+        i = Image.open('test.png')
         self.senderArray = np.array(i)
         # Oblicz SZEROKOŚC załadowanego zdjęcia [piksele]
         self.imgWidth = int(self.senderArray[0].size / 4)
