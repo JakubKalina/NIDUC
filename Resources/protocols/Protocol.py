@@ -1,14 +1,17 @@
 from abc import ABC, abstractmethod
-import threading
+from Resources.Sender import Sender
+from Resources.Receiver import Receiver
 
 
-class Protocol(ABC, threading.Thread):
-    Sender = None
-    Receiver = None
+class Protocol(ABC):
 
     def __init__(self, sender, receiver):
-        self.Sender = sender
-        self.Receiver = receiver
+        if not isinstance(sender, Sender):
+            raise TypeError('Pole "sender" musi być typu "Sender"!')
+
+        if not isinstance(receiver, Receiver):
+            raise TypeError('Pole "receiver" musi być typu "Receiver"!')
+
         pass
 
     @abstractmethod
@@ -17,10 +20,6 @@ class Protocol(ABC, threading.Thread):
 
     @abstractmethod
     def receiver_end_point(self):
-        pass
-
-    @abstractmethod
-    def start_transmission(self):
         pass
 
     pass
