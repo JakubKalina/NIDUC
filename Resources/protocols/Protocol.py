@@ -22,4 +22,8 @@ class Protocol(ABC):
     def receiver_end_point(self):
         pass
 
+    @abstractmethod
+    def start_transmission(self):
+        pass
+
     pass

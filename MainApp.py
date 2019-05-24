@@ -1,34 +1,38 @@
-from Resources.protocols.StopAndWait import StopAndWait
+from Resources.protocols.GoBackN import GoBackN
 from Resources.Sender import Sender
 from Resources.Receiver import Receiver
 import Resources.Image as ImageLib
 from Resources.Interference import interfere
+import time
 
 # deklaracja potrzebnych zmiennych globalnych
 #       - najlepiej żeby nie były to dane które mają zostać/powinny byc przesłane
 width = 14
 height = 14
 cell_width = 3
+object_size = width * height * cell_width
 
 receiver = Receiver()
 sender = Sender(receiver=receiver)
 receiver.set_sender(sender=sender)
-# Aplikacja startowa
+# SKRYPT GŁÓWNY
 
 # wyświetl obraz przed wysłaniem
-ImageLib.display_original_image(height, width)
+
+# ImageLib.display_original_image(height, width)
+
 # zakłócanie
-array = interfere(ImageLib.image_to_array(ImageLib.load_image()))
+array = ImageLib.image_to_array(ImageLib.load_image())
+array = interfere(array)
 
 #  - - - PRZESYŁANIE - - -
 
-stopAndWait = StopAndWait(sender=sender, receiver=receiver)
+# array = numpy.asarray([1, 2, 3, 4, 5, 6])
+goBackN = GoBackN(sender=sender, receiver=receiver, window_size=50, array_size=object_size)
+goBackN.delay = 0
+goBackN.start_transmission(array)
 
-stopAndWait.start_transmission(array)
 
-array = receiver.receivedArray
+new_array = ImageLib.unflatten_array(array, width, cell_width)
 
-# składanie tablicy jednowymiarowej do formatu tablicy konwertowalnej do obrazu(3 wymiarowej)
-array = ImageLib.unflatten_array(array, width, cell_width)
-# wyświetlanie zakłócanego obrazu
-ImageLib.display_image(array, height=height, width=width)
+ImageLib.display_image(new_array, height=height, width=width)

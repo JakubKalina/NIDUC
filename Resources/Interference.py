@@ -1,5 +1,4 @@
 import random
-
 # procent zakłóceń; mniejszy procent to mniej zakłóceń
 interference_ratio = 0.01
 
@@ -8,7 +7,7 @@ interference_ratio = 0.01
 def interfere(array):
 
     # ilość zakłóconych wartości
-    count = int(array.size * interference_ratio)
+    count = int(array.size * interference_ratio)-1
 
     for i in range(0, count):
         # losujemy indeks do zakłócenia
@@ -19,3 +18,9 @@ def interfere(array):
 
         pass
     return array
+
+
+def interfere_frame(frame):
+    frame.seq_number = random.randint(0, 1000)
+    frame.value = random.randint(0, 256)
+    return frame
