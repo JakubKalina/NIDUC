@@ -18,7 +18,8 @@ receiver.set_sender(sender=sender)
 ImageLib.display_original_image(height, width)
 
 #zepsuj
-array = interfere(ImageLib.image_to_array(ImageLib.load_image()))
+#array = interfere(ImageLib.image_to_array(ImageLib.load_image()))
+array = ImageLib.image_to_array(ImageLib.load_image())
 print("podaj wielkosc ramki")
 Sender.size = int(input())
 print("podaj wielkosc okna")
