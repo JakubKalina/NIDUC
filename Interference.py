@@ -12,10 +12,9 @@ def interfere(array):
 
     for i in range(0, count):
         # losujemy indeks do zakłócenia
-        index_to_interfere = random.randint(0, array.size)
+        index_to_interfere = random.randint(0, array.size -1)
 
         # zakłócamy wybraną wartość
         array[index_to_interfere] = random.randint(0, 256)
-
         pass
     return array
