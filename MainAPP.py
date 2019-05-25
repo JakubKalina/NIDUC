@@ -23,8 +23,8 @@ print("podaj wielkosc ramki")
 Sender.size = int(input())
 print("podaj wielkosc okna")
 Sender.windowSize = int(input())
+receiver.frameSize = Sender.size
 Sender.image = array
-
 threading.Thread(target=Sender.send_frame_selective(Sender)).start()
 receiver.receiver_frame()
 array = numpy.asarray(receiver.receivedArray)

@@ -21,13 +21,13 @@ class Sender:
         counter = 0
         b = 0
         row = []
-        number =0
+        number = 0
         while counter < len(self.image) -1:
             if(b < self.size):
+                number += 1
                 row.append(self.image[counter])
                 b = b+1
                 counter += 1
-                number+=1
             else:
                 self.tableOfFrames.append(row)
                 row = []
@@ -40,13 +40,17 @@ class Sender:
         for i in range(0,sizeoftable):
             self.ACK.append(False)
 
-
-        Receiver.sizeOfTableFrames = sizeoftable
-        Receiver.sizeFrame = number
         i = 0
+        Receiver.numberOfValues = number
+        Receiver.numberOfFrames = sizeoftable
+        Receiver.reset_Data(Receiver)
         while i < sizeoftable:
-            #if self.ACK[i] == False:
-                Receiver.receivedData.append(self.tableOfFrames[i])
-                i+=1
+            #Receiver.receivedData.append(self.tableOfFrames[i])
+            self.ACK[i] = Receiver.recieve_frame(Receiver, self.tableOfFrames[i], i)
+
+            if(self.ACK[i]):
+                i += 1
+            else:
+                continue
 
 
