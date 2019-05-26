@@ -22,7 +22,6 @@ class Sender:
         b = 0
         row = []
         number = 0
-
         # dzieli obraz na ramki gotowe do przeslania
         while counter < len(self.image) - 1:
             if (b < self.size):
@@ -62,7 +61,6 @@ class Sender:
 
         #pokazuje ilosc ramek
         sizeoftable = len(self.tableOfFrames)
-
         #tworzy tablice o rozmiarze ilosci ramek z potwierdzeniami lub odrzuceniami pakietów
         for i in range(0, sizeoftable):
             self.ACK.append(False)
@@ -82,7 +80,7 @@ class Sender:
                 if j == sizeoftable:
                     break
                 if self.ACK[j] == False:
-                    time.sleep(0.2)
+                    #time.sleep(0.2)
                     print("Sending pocket = " + str(j))
                     self.ACK[j] = Receiver.recieve_frame(Receiver, self.tableOfFrames[j], j)
                 else:
@@ -109,5 +107,6 @@ class Sender:
                         break
                 endOfWindow += count
                 i += count
+
 
 
