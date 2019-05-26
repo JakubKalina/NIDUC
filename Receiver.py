@@ -1,6 +1,7 @@
 import random
 import time
 import Interference as interfere
+import numpy
 
 class Receiver:
     receivedArray = []
@@ -23,45 +24,38 @@ class Receiver:
 
     def receiver_frame(self):
         print (self.receivedData)
-
         for i in range (0, len(self.receivedData)):
             for j in range (0, (len(self.receivedData[i]) - 1)):
                 self.receivedArray.append(self.receivedData[i][j])
         print(self.receivedArray)
 
 
-
     def recieve_frame(self, frame, sequence_number):
         isGood = False
+        #zaklocenie ramki jesli wylosuje odp warttosc
         rand = random.randrange(0, 100)
-        #zepsucie obrazu jesli wylosuje wartosc
-
-            #zostanie dodane jutro
-
-
-
-        sumi = self.count_sum(self, frame)
-
-
-        if sumi == frame[len(frame) - 1]:
+        if rand > 90:
+            frame = self.interfere(self, frame)
+        checksum = self.count_sum(self, frame)
+        if checksum == frame[len(frame) - 1]:
             isGood = True
         else:
             isGood = False
 
-
-
-
         if (isGood):
-            time.sleep(0.2)
-            print("received pocket = " + str(sequence_number))
-            self.receivedData[sequence_number] = frame
-            return True;
-
+            #time.sleep(0.2)
+            #zaklocenie potwierdzenia odbioru
+            randix = random.randrange(0, 100)
+            if randix > 90:
+                return False;
+            else:
+                print("received pocket = " + str(sequence_number))
+                self.receivedData[sequence_number] = frame
+                return True
         else:
-            time.sleep(0.2)
+            #time.sleep(0.2)
             print("you need to resend pocket = " + str(sequence_number))
-            return False
-
+            return False;
 
 
     def count_sum(self, frame):
@@ -78,7 +72,8 @@ class Receiver:
 
 
     def interfere(self, frame):
-        for i in range(0, len(frame)):
-            frame = random.randint(0, 255)
-            pass
-        return frame
+        table = []
+        for i in range(0, len(frame) -1 ):
+            table.append(random.randint(0, 256))
+        table.append(int(frame[(len(frame) - 1)]))
+        return table
