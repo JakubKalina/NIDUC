@@ -111,3 +111,21 @@ def unflatten_array(array, width, cell_width):
         pass
 
     return numpy.asarray(final_image_array)
+
+
+# Grupuje jednowymiarową tablice obrazu
+# w tablice ramek o podanym rozmiarze
+def group_by(array, frame_size):
+    array_grouped = []
+    frame = []
+
+    for i in range(0, len(array)):
+        if (i + 1) % frame_size == 0 or (i+1) == len(array):
+            frame.append(array[i])
+            frame = numpy.asarray(frame)
+            array_grouped.append(frame)
+            frame = []
+        else:
+            frame.append(array[i])
+        pass
+    return numpy.asarray(array_grouped)
