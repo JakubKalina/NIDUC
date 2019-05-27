@@ -1,4 +1,5 @@
 from Receiver import Receiver
+from Image import group_by
 import time
 
 
@@ -17,27 +18,27 @@ class Sender:
         pass
 
     def send_frame_selective(self):
-        i = 0;
+        i = 0
         counter = 0
         b = 0
         row = []
         number = 0
-        # dzieli obraz na ramki gotowe do przeslania
+        # dzieli obraz na ramki gotowe do przesłania
         while counter < len(self.image) - 1:
-            if (b < self.size):
+            if b < self.size:
                 number += 1
                 row.append(self.image[counter])
                 b = b + 1
                 counter += 1
             else:
-                #generowanie sumy kontrolnej algorytmem Luhna
+                # generowanie sumy kontrolnej algorytmem Luhna
                 sum = 0
-                for k in range (0, len(row)):
+                for k in range(0, len(row)):
                     help = row[k]
                     while help > 0:
-                        sum += help%10
-                        help = int(help/10)
-                sum = sum%10
+                        sum += help % 10
+                        help = int(help / 10)
+                sum = sum % 10
                 sum = 10 - sum
                 row.append(sum)
                 self.tableOfFrames.append(row)
@@ -48,50 +49,50 @@ class Sender:
                 for k in range(0, len(row)):
                     help = row[k]
                     while help > 0:
-                        sum += help%10
-                        help = int(help/10)
+                        sum += help % 10
+                        help = int(help / 10)
                 sum = sum % 10
                 sum = 10 - sum
                 row.append(sum)
                 self.tableOfFrames.append(row)
                 counter += 1
 
-        #drukuje wszystkie ramki
+        # drukuje wszystkie ramki
         print(self.tableOfFrames)
 
-        #pokazuje ilosc ramek
+        # pokazuje ilosc ramek
         sizeoftable = len(self.tableOfFrames)
-        #tworzy tablice o rozmiarze ilosci ramek z potwierdzeniami lub odrzuceniami pakietów
+        # tworzy tablice o rozmiarze ilosci ramek z potwierdzeniami lub odrzuceniami pakietów
         for i in range(0, sizeoftable):
             self.ACK.append(False)
 
-        #przenoszenie do receivera potrzebnych wartosci
+        # przenoszenie do receivera potrzebnych wartosci
         Receiver.numberOfValues = number
         Receiver.numberOfFrames = sizeoftable
         Receiver.reset_Data(Receiver)
-        i=0
-        endOfWindow = self.windowSize -1
+        i = 0
+        endOfWindow = self.windowSize - 1
 
-        #petla wysylajaca ramki zgodnie z regulami algotrytmu selektywnego
+        # petla wysylajaca ramki zgodnie z regulami algotrytmu selektywnego
         while i < sizeoftable:
             isCorrectFrame = True
-            #petla operujaca oknem i wysylajaca te ramki ktore sender od nas chce
-            for j in range (i , endOfWindow + 1):
+            # petla operujaca oknem i wysylajaca te ramki ktore sender od nas chce
+            for j in range(i, endOfWindow + 1):
                 if j == sizeoftable:
                     break
                 if self.ACK[j] == False:
-                    #time.sleep(0.2)
-                    print("Sending pocket = " + str(j))
-                    self.ACK[j] = Receiver.recieve_frame(Receiver, self.tableOfFrames[j], j)
+                    # time.sleep(0.2)
+                    print(f'SENDER: wysłano obiekt nr "{j}"')
+                    self.ACK[j] = self.receiver.recieve_frame(self.tableOfFrames[j], j)
                 else:
                     pass
-            #petla sprawdzajaca czy cala ramka zostala przeslana bez zarzutów
+            # petla sprawdzajaca czy cala ramka zostala przeslana bez zarzutów
             for j in range(i, endOfWindow + 1):
                 if j == sizeoftable:
                     break
                 if self.ACK[j] == False:
                     isCorrectFrame = False
-            #warunki odpowiadajace za przesuwanie sie okna gdy ramka jest dobra lub gdy ktorys z pakietow jest uszkodzony
+            # warunki odpowiadajace za przesuwanie sie okna gdy ramka jest dobra lub gdy ktorys z pakietow jest uszkodzony
             if isCorrectFrame:
                 if (endOfWindow + self.windowSize) >= sizeoftable:
                     endOfWindow = sizeoftable
@@ -108,5 +109,68 @@ class Sender:
                 endOfWindow += count
                 i += count
 
+    def send_frame_go_back_n(self, delay):
+        # przygotowanie ramek fo wysłania
+        # 1. stworzenie tablicy ramek z sumą kontrolną
+        self.tableOfFrames = group_by(self.image, self.size)
+
+        # pokazuje ilość ramek
+        size_of_table = len(self.tableOfFrames)
+
+        # tworzy tablice o rozmiarze ilości ramek z potwierdzeniami lub odrzuceniami pakietów
+        for i in range(0, size_of_table):
+            self.ACK.append(False)
+
+        # przenoszenie do receivera potrzebnych wartości
+        self.receiver.numberOfValues = self.image.size
+        self.receiver.numberOfFrames = len(self.tableOfFrames)
+        self.receiver.reset_Data()
+
+        # rozpoczęcie przesyłania
+        i = 0
+        win_start = i
+        win_end = i + self.windowSize
+        length_table_of_frames = len(self.tableOfFrames)
+
+        while i < length_table_of_frames:
+            while i < win_end and i < length_table_of_frames:
+                # pobranie ramki do wysłania
+                data = self.tableOfFrames[i]
+                sequence_number = i
+
+                # wysyłanie ramki
+                print(f'\nSENDER: wysłano obiekt nr "{i}"')
+                self.ACK[i] = self.receiver.recieve_frame(frame=data, sequence_number=sequence_number)
+
+                time.sleep(delay)
+                if self.ACK[win_start]:
+                    print(f'SENDER: odebrano ATK "{win_start}"\n')
+                    win_end += 1
+                    win_start += 1
+                    # i = win_start
+                else:
+                    if win_end > length_table_of_frames:
+                        win_end = length_table_of_frames
+                    for k in range(win_start + 1, win_end):
+                        if self.ACK[k]:
+                            print(f'SENDER: odebrano ATK "{k}, Pominięto ATK "{win_start}"\n')
+                            i = win_start - 1
+                            break
+
+                i += 1
+                time.sleep(delay)
+                pass
+            pass
+            time.sleep(delay)
+            if i == win_end:
+                i = win_start
+            pass
+
+        print('SENDER: koniec wysyłania\n')
+        pass
 
 
+class Frame:
+    value = None
+    seq_number = 0
+    pass
