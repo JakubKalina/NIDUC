@@ -97,22 +97,22 @@ class Receiver:
                 self.sender.ACK[last_good_frame + 1] = False
 
         # Metoda odbierająca dla protokołu stop-and-wait
-        def receive_frame_stop_and_wait(self, frame, sequenceNumber):
-            receivedFrameLength = len(frame)
-            # Otrzymana suma kontrolna
-            receivedSum = frame[receivedFrameLength - 1]
+    def receive_frame_stop_and_wait(self, frame, sequenceNumber):
+        receivedFrameLength = len(frame)
+        # Otrzymana suma kontrolna
+        receivedSum = frame[receivedFrameLength - 1]
 
-            # zaklocenie ramki jesli wylosuje odp warttosc
-            rand = random.randrange(0, 100)
-            if rand > 90:
-                frame = self.interfere(frame)
-            checksum = self.count_sum(frame)
+        # zaklocenie ramki jesli wylosuje odp warttosc
+        rand = random.randrange(0, 100)
+        if rand > 90:
+            frame = self.interfere(frame)
+        checksum = self.count_sum(frame)
 
-            if checksum == receivedSum:
-                self.receivedData[sequenceNumber] = frame
-                return True
-            else:
-                return False
+        if checksum == receivedSum:
+            self.receivedData[sequenceNumber] = frame
+            return True
+        else:
+            return False
 
     def count_sum(self, frame):
         sum = 0
