@@ -38,7 +38,8 @@ print("3. Selective Repeat")
 chosenOption = int(input())
 
 if chosenOption == 1:
-    print("1")
+    threading.Thread(target=sender.send_frame_selective(), args=(sender,)).start()
+    receiver.receiver_frame()
 if chosenOption == 2:
     delay = 0
     # threading.Thread(target=receiver.receive_data_go_back_n()).start()

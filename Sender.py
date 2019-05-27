@@ -1,5 +1,6 @@
 from Receiver import Receiver
 from Image import group_by
+from Interference import interfere
 import time
 
 
@@ -110,6 +111,7 @@ class Sender:
                 i += count
 
     def send_frame_go_back_n(self, delay):
+        # self.image = interfere(self.image)
         # przygotowanie ramek fo wysłania
         # 1. stworzenie tablicy ramek z sumą kontrolną
         self.tableOfFrames = group_by(self.image, self.size)

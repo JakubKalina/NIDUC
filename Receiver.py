@@ -1,6 +1,4 @@
 import random
-import time
-import Interference as interfere
 import numpy
 
 
@@ -29,6 +27,7 @@ class Receiver:
         for i in range(0, len(self.receivedData)):
             for j in range(0, (len(self.receivedData[i]) - 1)):
                 self.receivedArray.append(self.receivedData[i][j])
+        self.receivedArray = (numpy.asarray(self.receivedArray)).astype(numpy.uint8)
         print(self.receivedArray)
 
     def recieve_frame(self, frame, sequence_number):
@@ -125,6 +124,7 @@ class Receiver:
         sum = sum % 10
         sum = 10 - sum
         return sum
+
 
     def interfere(self, frame):
         table = []

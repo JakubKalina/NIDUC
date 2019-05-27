@@ -1,7 +1,7 @@
 import random
 
 # procent zakłóceń; mniejszy procent to mniej zakłóceń
-interference_ratio = 0.01
+interference_ratio = 0.99
 
 
 # zakłóć tablice
