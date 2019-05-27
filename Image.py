@@ -122,6 +122,7 @@ def group_by(array, frame_size):
     for i in range(0, len(array)):
         if (i + 1) % frame_size == 0 or (i+1) == len(array):
             frame.append(array[i])
+            frame = add_control_sum(frame)
             frame = numpy.asarray(frame)
             array_grouped.append(frame)
             frame = []
@@ -129,3 +130,16 @@ def group_by(array, frame_size):
             frame.append(array[i])
         pass
     return numpy.asarray(array_grouped)
+
+
+def add_control_sum(frame):
+    control_sum = 0
+    for k in range(0, len(frame)):
+        helper = frame[k]
+        while helper > 0:
+            control_sum += helper % 10
+            helper = int(helper / 10)
+    control_sum = control_sum % 10
+    control_sum = 10 - control_sum
+    frame.append(control_sum)
+    return frame
