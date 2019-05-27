@@ -169,6 +169,77 @@ class Sender:
         print('SENDER: koniec wysyłania\n')
         pass
 
+# Metoda wysyłająca dla protokołu stop-and-wait
+    def send_frame_stop_and_wait(self):
+        # test
+        # print(self.image)
+        i = 0
+        counter = 0
+        b = 0
+        row = []
+        number = 0
+        # podzielenie ramek i przygotowanie ich do wysłania
+        while counter < len(self.image) - 1:
+            if b < self.size:
+                number += 1
+                row.append(self.image[counter])
+                b = b + 1
+                counter += 1
+            else:
+                #dodanie sumy kontrolnej algorytmem Luhna
+                sum = 0
+                for k in range (0, len(row)):
+                    help = row[k]
+                    while help > 0:
+                        sum += help%10
+                        help = int(help/10)
+                sum = sum % 10
+                sum = 10 - sum
+                row.append(sum)
+                self.tableOfFrames.append(row)
+                row = []
+                b = 0
+            # suma kontrolna
+            if counter == len(self.image) - 1:
+                sum = 0
+                for k in range(0, len(row)):
+                    help = row[k]
+                    while help > 0:
+                        sum += help%10
+                        help = int(help/10)
+                sum = sum % 10
+                sum = 10 - sum
+                row.append(sum)
+                self.tableOfFrames.append(row)
+                counter += 1
+
+        #wyświetlenie tablicy zawierającej wszystkie ramki
+        print(self.tableOfFrames)
+
+        #zapis ilości ramek
+        sizeoftable = len(self.tableOfFrames)
+        #tworzy tablice o rozmiarze ilosci ramek z potwierdzeniami lub odrzuceniami pakietów
+        for i in range(0, sizeoftable):
+            self.ACK.append(False)
+
+        #przenoszenie do receivera potrzebnych wartosci
+        Receiver.numberOfValues = number
+        Receiver.numberOfFrames = sizeoftable
+        Receiver.reset_Data(Receiver)
+        i = 0
+        endOfWindow = self.windowSize -1
+
+        print("Rozmiar tablicy ramek:")
+        print(sizeoftable)
+
+        #wysyłanie poszczególnych ramek
+        while i < sizeoftable:
+            self.ACK[i] = self.receiver.receive_frame_stop_and_wait(self.tableOfFrames[i], i)
+            if self.ACK[i]:
+                i += 1
+            else:
+                self.ACK[i] = False
+                continue
 
 class Frame:
     value = None

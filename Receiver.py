@@ -96,6 +96,24 @@ class Receiver:
                 print("you need to resend pocket = " + str(last_sequence_number+1))
                 self.sender.ACK[last_good_frame + 1] = False
 
+        # Metoda odbierająca dla protokołu stop-and-wait
+        def receive_frame_stop_and_wait(self, frame, sequenceNumber):
+            receivedFrameLength = len(frame)
+            # Otrzymana suma kontrolna
+            receivedSum = frame[receivedFrameLength - 1]
+
+            # zaklocenie ramki jesli wylosuje odp warttosc
+            rand = random.randrange(0, 100)
+            if rand > 90:
+                frame = self.interfere(frame)
+            checksum = self.count_sum(frame)
+
+            if checksum == receivedSum:
+                self.receivedData[sequenceNumber] = frame
+                return True
+            else:
+                return False
+
     def count_sum(self, frame):
         sum = 0
         for k in range(0, len(frame) - 1):
@@ -114,3 +132,5 @@ class Receiver:
             table.append(random.randint(0, 256))
         table.append(int(frame[(len(frame) - 1)]))
         return table
+
+
