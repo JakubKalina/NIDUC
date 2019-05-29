@@ -18,3 +18,10 @@ def interfere(array):
         array[index_to_interfere] = random.randint(0, 256)
         pass
     return array
+
+def interfere_frame(frame, sizeOfFrame):
+    table = []
+    for i in range(0, sizeOfFrame):
+        table.append(random.randint(0, 256))
+    table.append(int(frame[(len(frame) - 1)]))
+    return table
