@@ -1,5 +1,4 @@
 import Image as ImageLib
-from Interference import interfere
 from Sender import Sender
 from Receiver import Receiver
 import numpy
@@ -37,6 +36,12 @@ print("2. Go Back N")
 print("3. Selective Repeat")
 chosenOption = int(input())
 
+print("Teraz wybierz opcje sprawdzania czy pakiet jest dobry:")
+print("1. Algorytm Luhna")
+print("2. Algorytm CRC")
+print("3. Bit parzystosci")
+Receiver.chosenSumAlgorithm = int(input())
+Sender.ChosenSumAlgorithm = Receiver.chosenSumAlgorithm
 if chosenOption == 1:
     threading.Thread(target=sender.send_frame_selective(), args=(sender,)).start()
     receiver.receiver_frame()
@@ -51,8 +56,5 @@ if chosenOption == 3:
 
 array = numpy.asarray(receiver.receivedArray)
 array = ImageLib.unflatten_array(array, width, cell_width)
-print(array)
-
-print(array.size/(3*14))
 # wyświetl zakłócony obraz
 ImageLib.display_image(array, height=height, width=width)
