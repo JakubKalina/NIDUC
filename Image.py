@@ -1,162 +1,188 @@
-import random
+from tkinter import *
+from PIL import ImageTk, Image
 import numpy
-import Interference as Interfe
+import zlib
+import binascii
 
-class Receiver:
-    chosenSumAlgorithm = None
-    receivedArray = []
-    receivedData = []
-    sending = []
-    numberOfFrames = 0
-    frameSize = 0
-    numberOfValues = 0
-    xd = 0
-    numberOfPositiveSent = 0
-    numberOfNegativeSent = 0
+# Stała do wyświetlania większego obrazu (proporcjonalnego)
+zoom = 30
 
-    def __init__(self):
+# ścieżka do zdjęcia oryginalnego
+ImagePath = "obraz.jpg"
+
+
+# wyświetl obraz z tablicy(zagnieżdżonej)
+def display_image(array, height, width):
+    window = Tk()
+
+    # oblicz proporcje obrazu
+    ratio = height / width
+    resize_width = width * zoom
+    resize_height = int(resize_width * ratio)
+
+    # tworzenie obrazu z tablicy
+    image = Image.fromarray(array)
+    image = image.resize((resize_width, resize_height))
+    image = ImageTk.PhotoImage(image)
+    panel = Label(window, image=image)
+    panel.pack()
+    window.mainloop()
+
+
+# wyświetl ORYGINALNY obraz
+def display_original_image(height, width):
+    window = Tk()
+
+    # oblicz proporcje obrazu
+    ratio = height / width
+    resize_width = width * zoom
+    resize_height = int(resize_width * ratio)
+
+    # tworzenie obrazu z tablicy
+    image = Image.open(ImagePath)
+    image = image.resize((resize_width, resize_height))
+    image = ImageTk.PhotoImage(image)
+    panel = Label(window, image=image)
+    panel.pack()
+    window.mainloop()
+
+
+# utwórz jednowymiarową tablice z obrazu
+def image_to_array(image):
+    array_three_dimension = numpy.array(image)
+    flatten_array = array_three_dimension.flatten('C')
+
+    return flatten_array
+
+
+# utwórz obiekt obrazu z podaje tablicy jednowymiarowej
+def array_to_image(received_array):
+    image = Image.fromarray(received_array)
+    return image
+
+
+# załaduj plik z grafiką
+def load_image():
+    image = Image.open(ImagePath)
+    return image
+
+
+# wyświetla tablice jednowymiarową, podzieloną na rzędy jak w obrazie
+def print_image_array_values(array, image_width):
+    row = array.size / image_width
+
+    for i in range(0, array.size):
+        if i % row == 0 and i != 0:
+            print(f'{array[i]}, ')
+            pass
+        else:
+            print(f'{array[i]}, ', end='')
+            pass
+        pass
+    pass
+
+
+def unflatten_array(array, width, cell_width):
+    image_array = []
+    cell = []
+
+    for i in range(0, array.size):
+        if (i + 1) % cell_width == 0:
+            cell.append(array[i])
+            # cell = numpy.asarray(cell)
+            image_array.append(cell)
+            cell = []
+        else:
+            cell.append(array[i])
         pass
 
-    def reset_Data(self):
-        for i in range(0, self.numberOfFrames):
-            self.receivedData.append(0)
+    final_image_array = []
+    image_array = numpy.asarray(image_array)
 
-    def set_sender(self, sender):
-        self.sender = sender
+    row = []
+
+    for j in range(0, int(image_array.size/cell_width)):
+        if (j + 1) % width == 0:
+            row.append(image_array[j])
+            # row = numpy.asarray(row)
+            final_image_array.append(row)
+            row = []
+        else:
+            row.append(image_array[j])
         pass
 
-    def receiver_frame(self):
-        for i in range(0, len(self.receivedData)):
-            for j in range(0, (len(self.receivedData[i]) - 1)):
-                self.receivedArray.append(self.receivedData[i][j])
-        self.receivedArray = (numpy.asarray(self.receivedArray)).astype(numpy.uint8)
-        print(f'liczba pozytywnie przeslanych pakietow: {self.numberOfPositiveSent}')
-        print(f'liczba ponownie przeslanych pakietow: {self.numberOfNegativeSent}')
+    return numpy.asarray(final_image_array)
 
-
-    def recieve_frame(self, frame, sequence_number):
-        # zaklocenie ramki jesli wylosuje odp warttosc
-        rand = random.randrange(0, 100)
-        if rand > 90:
-            frame = Interfe.interfere_frame(frame,self.frameSize)
-        if self.chosenSumAlgorithm == 1:
-            checksum = self.count_sum_by_Luhn(frame=frame)
-        if self.chosenSumAlgorithm == 2:
-            checksum = self.count_sum_by_CRC(frame=frame)
-        if self.chosenSumAlgorithm == 3:
-            checksum = self.count_parity_bit(frame=frame)
-
-        if checksum == frame[len(frame) - 1]:
-            isGood = True
-        else:
-            isGood = False
-
-        #potwierdzenie poprawnego odbioru lub prosba o ponowne przeslanie
-        if isGood:
-            # zakłócenie potwierdzenia odbioru
-            randix = random.randrange(0, 100)
-            if randix > 90:
-                print(f'RECEIVER: Wysyłanie powiadomienia ponownego nadesłania pakietu nr "{sequence_number}"')
-                self.numberOfNegativeSent += 1
-                return False
+#funkcja tworzy tablice ramek o podanym rozmiarze oraz dodaje wybrana wczesniej sume kontrolna
+def gruop_into_frames(image, size,ChosenSumAlgorithm):
+        counter = 0
+        b = 0
+        number = 0
+        row = []
+        tableOfFrames = []
+        # dzieli obraz na ramki gotowe do przesłania
+        while counter < len(image)-1:
+            if b < size:
+                row.append(image[counter])
+                b = b + 1
+                counter += 1
             else:
-                print(f'RECEIVER:odebrano ramkę nr "{sequence_number}"')
-                self.receivedData[sequence_number] = frame
-                self.numberOfPositiveSent += 1
-                return True
-        else:
-            randix = random.randrange(0, 100)
-            if randix < 90:
-                print(f'RECEIVER: Wysyłanie powiadomienia ponownego nadesłania pakietu nr "{sequence_number}"')
-                self.numberOfNegativeSent += 1
-                return False
-            else:
-                print(f'RECEIVER:odebrano ramkę nr "{sequence_number}"')
-                self.receivedData[sequence_number] = frame
-                self.numberOfPositiveSent += 1
-                return True
+                # generowanie sumy kontrolnej algorytmem Luhna
+                if ChosenSumAlgorithm == 1:
+                    row = add_control_sum_LuhnAlgorithm(row)
+                if ChosenSumAlgorithm == 2:
+                    row = add_control_sum_CRC(row)
+                if ChosenSumAlgorithm == 3:
+                    row = add_parity_bit(row)
+                tableOfFrames.append(row)
+                row = []
+                b = 0
+            if counter == len(image) - 1:
+                sum = 0
+                for k in range(0, len(row)):
+                    help = row[k]
+                    while help > 0:
+                        sum += help % 10
+                        help = int(help / 10)
+                sum = sum % 10
+                sum = 10 - sum
+                row.append(sum)
+                tableOfFrames.append(row)
+                counter += 1
+        return tableOfFrames
 
-    def receive_data_go_back_n(self):
-        last_good_frame = -1
-        last_sequence_number = -1
+def add_control_sum_LuhnAlgorithm(frame):
+    control_sum = 0
+    for k in range(0, len(frame)):
+        helper = frame[k]
+        while helper > 0:
+            control_sum += helper % 10
+            helper = int(helper / 10)
+    control_sum = control_sum % 10
+    control_sum = 10 - control_sum
+    frame.append(control_sum)
+    return frame
 
-        while last_good_frame < self.numberOfFrames:
-            is_frame_good = False
-            frame = self.sending[last_good_frame + 1]
-            received_sequence_number = self.senfingSEQ[last_good_frame + 1]
+def add_control_sum_CRC(frame):
+    text = ''
+    for i in range(0, len(frame)):
+        text += str(frame[i])
+    crchex = hex(zlib.crc32(bytes(text, 'utf-8')))
+    frame.append(crchex)
+    return frame
 
-            # zakłócenie ramki jeśli wylosuje odp wartość
-            rand = random.randrange(0, 100)
-            if rand > 90:
-                frame = self.interfere(frame)
-            checksum = self.count_sum_by_Luhn(frame)
-
-            if checksum == frame[len(frame) - 1]:
-                is_frame_good = True
-            else:
-                is_frame_good = False
-
-            if is_frame_good and last_sequence_number + 1 == received_sequence_number:
-                # time.sleep(2)
-                # zakłócenie potwierdzenia odbioru
-                randix = random.randrange(0, 100)
-                if randix > 90:
-                    self.sender.ACK[last_good_frame + 1] = False
-                else:
-                    print("received pocket = " + str(last_sequence_number + 1))
-                    self.receivedData[last_sequence_number + 1] = frame
-                    self.sender.ACK[last_good_frame + 1] = True
-                    last_good_frame += 1
-                    last_sequence_number += 1
-            else:
-                # time.sleep(0.2)
-                print("you need to resend pocket = " + str(last_sequence_number + 1))
-                self.sender.ACK[last_good_frame + 1] = False
-
-        # Metoda odbierająca dla protokołu stop-and-wait
-
-    def receive_frame_stop_and_wait(self, frame, sequenceNumber):
-        receivedFrameLength = len(frame)
-        # Otrzymana suma kontrolna
-        receivedSum = frame[receivedFrameLength - 1]
-
-        # zaklocenie ramki jesli wylosuje odp warttosc
-        rand = random.randrange(0, 100)
-        if rand > 90:
-            frame = Interfe.interfere_frame(frame)
-        checksum = self.count_sum_by_Luhn(frame)
-
-        if checksum == receivedSum:
-            self.receivedData[sequenceNumber] = frame
-            return True
-        else:
-            return False
-
-    def count_sum_by_Luhn(self, frame):
-        sum = 0
-        for k in range(0, len(frame) - 1):
-            help = frame[k]
-            while help > 0:
-                sum += help % 10
-                help = int(help / 10)
-                pass
-        sum = sum % 10
-        sum = 10 - sum
-        return sum
-
-    def count_sum_by_CRC(self,frame):
-        pass
-
-    def count_parity_bit(self, frame):
-        count_1 = 0
-        for i in range(0, len(frame) - 1):
-            helper = frame[i]
-            while helper > 0:
-                pom = helper % 2
-                helper = int(helper / 2)
-                if pom == 1:
-                    count_1 += 1
-        if count_1 % 2 == 1:
-            return 1
-        else:
-            return 0
+def add_parity_bit(frame):
+    count_1 = 0
+    for i in range(0,len(frame)):
+        helper = frame[i]
+        while helper > 0:
+            pom = helper % 2
+            helper = int(helper/2)
+            if pom == 1:
+                count_1 += 1
+    if count_1 % 2 == 1:
+        frame.append(1)
+    else:
+        frame.append(0)
+    print(frame)
+    return frame
