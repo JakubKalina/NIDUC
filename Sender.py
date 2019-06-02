@@ -1,6 +1,4 @@
 from Receiver import Receiver
-from Image import group_by
-from Interference import interfere
 import time
 import Image
 
@@ -75,7 +73,7 @@ class Sender:
         # self.image = interfere(self.image)
         # przygotowanie ramek fo wysłania
         # 1. stworzenie tablicy ramek z sumą kontrolną
-        self.tableOfFrames = group_by(self.image, self.size)
+        self.tableOfFrames = Image.gruop_into_frames(self.image, self.size, self.ChosenSumAlgorithm)
 
         # pokazuje ilość ramek
         size_of_table = len(self.tableOfFrames)
@@ -136,51 +134,14 @@ class Sender:
     def send_frame_stop_and_wait(self):
         # test
         # print(self.image)
-        i = 0
-        counter = 0
-        b = 0
-        row = []
-        number = 0
-        # podzielenie ramek i przygotowanie ich do wysłania
-        while counter < len(self.image) - 1:
-            if b < self.size:
-                number += 1
-                row.append(self.image[counter])
-                b = b + 1
-                counter += 1
-            else:
-                #dodanie sumy kontrolnej algorytmem Luhna
-                sum = 0
-                for k in range (0, len(row)):
-                    help = row[k]
-                    while help > 0:
-                        sum += help%10
-                        help = int(help/10)
-                sum = sum % 10
-                sum = 10 - sum
-                row.append(sum)
-                self.tableOfFrames.append(row)
-                row = []
-                b = 0
-            # suma kontrolna
-            if counter == len(self.image) - 1:
-                sum = 0
-                for k in range(0, len(row)):
-                    help = row[k]
-                    while help > 0:
-                        sum += help%10
-                        help = int(help/10)
-                sum = sum % 10
-                sum = 10 - sum
-                row.append(sum)
-                self.tableOfFrames.append(row)
-                counter += 1
+        self.tableOfFrames = Image.gruop_into_frames(self.image, self.size, self.ChosenSumAlgorithm)
 
         #wyświetlenie tablicy zawierającej wszystkie ramki
         print(self.tableOfFrames)
 
         #zapis ilości ramek
         sizeoftable = len(self.tableOfFrames)
+
         #tworzy tablice o rozmiarze ilosci ramek z potwierdzeniami lub odrzuceniami pakietów
         for i in range(0, sizeoftable):
             self.ACK.append(False)
