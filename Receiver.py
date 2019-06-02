@@ -13,6 +13,7 @@ class Receiver:
     xd = 0
     numberOfPositiveSent = 0
     numberOfNegativeSent = 0
+    numberOfAllSent = 0
 
     def __init__(self):
         pass
@@ -30,6 +31,7 @@ class Receiver:
             for j in range(0, (len(self.receivedData[i]) - 1)):
                 self.receivedArray.append(self.receivedData[i][j])
         self.receivedArray = (numpy.asarray(self.receivedArray)).astype(numpy.uint8)
+        print(f'liczba pozytywnie przeslanych pakietow: {self.numberOfAllSent}')
         print(f'liczba pozytywnie przeslanych pakietow: {self.numberOfPositiveSent}')
         print(f'liczba ponownie przeslanych pakietow: {self.numberOfNegativeSent}')
 
@@ -50,7 +52,7 @@ class Receiver:
             isGood = True
         else:
             isGood = False
-
+        self.numberOfAllSent +=1
         #potwierdzenie poprawnego odbioru lub prosba o ponowne przeslanie
         if isGood:
             # zakłócenie potwierdzenia odbioru
@@ -75,6 +77,7 @@ class Receiver:
                 self.receivedData[sequence_number] = frame
                 self.numberOfPositiveSent += 1
                 return True
+
 
     def receive_data_go_back_n(self):
         last_good_frame = -1
