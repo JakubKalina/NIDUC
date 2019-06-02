@@ -1,6 +1,7 @@
 import random
 import numpy
 import Interference as Interfe
+import zlib
 
 class Receiver:
     chosenSumAlgorithm = None
@@ -31,7 +32,7 @@ class Receiver:
             for j in range(0, (len(self.receivedData[i]) - 1)):
                 self.receivedArray.append(self.receivedData[i][j])
         self.receivedArray = (numpy.asarray(self.receivedArray)).astype(numpy.uint8)
-        print(f'liczba pozytywnie przeslanych pakietow: {self.numberOfAllSent}')
+        print(f'liczba wszystkich przeslanych pakietow: {self.numberOfAllSent}')
         print(f'liczba pozytywnie przeslanych pakietow: {self.numberOfPositiveSent}')
         print(f'liczba ponownie przeslanych pakietow: {self.numberOfNegativeSent}')
 
@@ -82,7 +83,7 @@ class Receiver:
     def receive_data_go_back_n(self):
         last_good_frame = -1
         last_sequence_number = -1
-
+        checksum = None
         while last_good_frame < self.numberOfFrames:
             is_frame_good = False
             frame = self.sending[last_good_frame + 1]
@@ -92,7 +93,13 @@ class Receiver:
             rand = random.randrange(0, 100)
             if rand > 90:
                 frame = self.interfere(frame)
-            checksum = self.count_sum_by_Luhn(frame)
+
+            if self.chosenSumAlgorithm == 1:
+                checksum = self.count_sum_by_Luhn(frame=frame)
+            if self.chosenSumAlgorithm == 2:
+                checksum = self.count_sum_by_CRC(frame=frame)
+            if self.chosenSumAlgorithm == 3:
+                checksum = self.count_parity_bit(frame=frame)
 
             if checksum == frame[len(frame) - 1]:
                 is_frame_good = True
@@ -120,20 +127,37 @@ class Receiver:
 
     def receive_frame_stop_and_wait(self, frame, sequenceNumber):
         receivedFrameLength = len(frame)
+        checksum = None
         # Otrzymana suma kontrolna
+
         receivedSum = frame[receivedFrameLength - 1]
 
         # zaklocenie ramki jesli wylosuje odp warttosc
         rand = random.randrange(0, 100)
         if rand > 90:
             frame = Interfe.interfere_frame(frame)
-        checksum = self.count_sum_by_Luhn(frame)
+
+        if self.chosenSumAlgorithm == 1:
+            checksum = self.count_sum_by_Luhn(frame=frame)
+        if self.chosenSumAlgorithm == 2:
+            checksum = self.count_sum_by_CRC(frame=frame)
+        if self.chosenSumAlgorithm == 3:
+            checksum = self.count_parity_bit(frame=frame)
 
         if checksum == receivedSum:
-            self.receivedData[sequenceNumber] = frame
-            return True
+            randix = random.randrange(0, 100)
+            if randix < 90:
+                self.receivedData[sequenceNumber] = frame
+                return True
+            else:
+                return False
         else:
-            return False
+            randix = random.randrange(0, 100)
+            if randix < 90:
+                return False
+            else:
+                self.receivedData[sequenceNumber] = frame
+                return True
 
     def count_sum_by_Luhn(self, frame):
         sum = 0
@@ -147,8 +171,13 @@ class Receiver:
         sum = 10 - sum
         return sum
 
-    def count_sum_by_CRC(self,frame):
-        pass
+    def count_sum_by_CRC(self, frame):
+        text = ''
+        for i in range(0, len(frame) - 1):
+            text += str(frame[i])
+        crchex = hex(zlib.crc32(bytes(text, 'utf-8')))
+        return crchex
+
 
     def count_parity_bit(self, frame):
         count_1 = 0
